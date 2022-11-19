@@ -1,25 +1,23 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
-	"time"
+	"path/filepath"
 
-	"github.com/pquerna/otp/totp"
+	// "path/filepath"
+
+	// "time"
+
+	// "github.com/pquerna/otp/totp"
 	"github.com/triptolemusew/gotp/encryption"
 )
 
-func promptForPasscode() string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter passcode: ")
-	text, _ := reader.ReadString('\n')
-	return text
-}
-
 const (
 	TOKENFILES_DIR = ".gotp/tokens"
+	ENCRYPTED_EXT  = ".enc"
 )
 
 func listTokens(tokenFilesDir string) error {
@@ -29,7 +27,7 @@ func listTokens(tokenFilesDir string) error {
 	}
 
 	for _, file := range files {
-		code := showToken(fmt.Sprintf("%s/%s", tokenFilesDir, file.Name()))
+		code, _ := showToken(fmt.Sprintf("%s/%s", tokenFilesDir, file.Name()))
 		fmt.Printf("%s -> %s", file.Name(), code)
 		fmt.Println()
 	}
@@ -37,29 +35,51 @@ func listTokens(tokenFilesDir string) error {
 	return nil
 }
 
-func showToken(tokenPath string) string {
-	token, err := ioutil.ReadFile(tokenPath)
+func showToken(tokenPath string) (string, error) {
 
+	var token string
+
+	matches, err := filepath.Glob(pattern)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	secret, err := totp.GenerateCode(string(token), time.Time{})
-	if err != nil {
-		panic(err)
+	for _, match := range matches {
+		file, _ := os.Stat(match)
+		ext := filepath.Ext(match)
+
+		if fileNameWithoutExtension(file.Name()) == "a" {
+			token, err := ioutil.ReadFile(match)
+			if err != nil {
+				return "", nil
+			}
+
+			var password string
+			fmt.Printf("Enter password: ")
+			fmt.Scan(&password)
+
+			if ext == ENCRYPTED_EXT {
+				token, err := encryption.Decrypt([]byte(password), token)
+				if err != nil {
+					// Proper error message here
+					return "", nil
+				}
+				return string(token), nil
+			}
+		}
 	}
 
-	return secret
+	return string(token), nil
 }
 
-type AddToken struct {
+type Token struct {
 	name     string
 	key      string
 	password string
 }
 
 func addToken(homeDir string) error {
-	var token AddToken
+	var token Token
 	var tokenPasswordConfirmation string
 
 	fmt.Printf("Token name: ")
@@ -118,14 +138,14 @@ func main() {
 		tokenFilesDir = fmt.Sprintf("%s/%s", homeDir, TOKENFILES_DIR)
 	}
 
-	fmt.Println(tokenFilesDir)
+	// fmt.Println(tokenFilesDir)
 
 	// listTokens(tokenFilesDir)
 	// fmt.Println(code)
 
 	// Adding routine
-	fmt.Println("Adding subroutine")
-	addToken(homeDir)
+	// fmt.Println("Adding subroutine")
+	// addToken(homeDir)
 
 	// Decrypt routine
 	// password := decryptToken(homeDir, "a.enc")
