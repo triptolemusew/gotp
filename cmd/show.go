@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
+
 	"github.com/pquerna/otp/totp"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
@@ -31,8 +34,71 @@ func (p *PlainToken) Print() {
 	fmt.Printf("%s - %s\n", file.Name(), p.secret)
 }
 
+func (p *PlainToken) GetLine() string {
+	file, _ := os.Stat(p.name)
+	return fmt.Sprintf("%s \t\t %s", file.Name(), p.secret)
+}
+
 func init() {
 	showCmd.Flags().BoolP("all", "a", false, "Get all of the tokens with secret")
+}
+
+func renderUI(tokenList []PlainToken) {
+	if err := ui.Init(); err != nil {
+		log.Fatalf("failed to initialize termui: %v", err)
+	}
+	defer ui.Close()
+
+	l := widgets.NewList()
+	l.Title = "Available Accounts"
+
+	for _, token := range tokenList {
+		l.Rows = append(l.Rows, token.GetLine())
+	}
+
+	l.TextStyle = ui.NewStyle(ui.ColorYellow)
+	l.WrapText = false
+	l.SetRect(0, 0, 50, 8)
+
+	ui.Render(l)
+
+	previousKey := ""
+	uiEvents := ui.PollEvents()
+	for {
+		e := <-uiEvents
+		switch e.ID {
+		case "q", "<C-c>":
+			return
+		case "j", "<Down>":
+			l.ScrollDown()
+		case "k", "<Up>":
+			l.ScrollUp()
+		case "<C-d>":
+			l.ScrollHalfPageDown()
+		case "<C-u>":
+			l.ScrollHalfPageUp()
+		case "<C-f>":
+			l.ScrollPageDown()
+		case "<C-b>":
+			l.ScrollPageUp()
+		case "g":
+			if previousKey == "g" {
+				l.ScrollTop()
+			}
+		case "<Home>":
+			l.ScrollTop()
+		case "G", "<End>":
+			l.ScrollBottom()
+		}
+
+		if previousKey == "g" {
+			previousKey = ""
+		} else {
+			previousKey = e.ID
+		}
+
+		ui.Render(l)
+	}
 }
 
 func showCmdExecution(cmd *cobra.Command, args []string) {
@@ -109,9 +175,13 @@ func showCmdExecution(cmd *cobra.Command, args []string) {
 	}
 
 	// Print all of the tokenList
-	for _, token := range plainTokenList {
-		token.Print()
-	}
+	// for _, token := range plainTokenList {
+	// 	token.Print()
+	// }
+	// renderUI(funk.Map(plainTokenList, func(x *PlainToken) string {
+	// 	return x.name
+	// }))
+	renderUI(plainTokenList)
 }
 
 func fileNameWithoutExtension(fileName string) string {
