@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/pquerna/otp v1.3.0
 	github.com/spf13/cobra v1.6.1
+	github.com/thoas/go-funk v0.9.2
 	golang.org/x/crypto v0.3.0
 	golang.org/x/term v0.2.0
 )
