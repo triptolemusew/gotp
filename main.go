@@ -134,6 +134,7 @@ func addToken(homeDir string) error {
 
 func main() {
 	cmd.Execute()
+
 	// tokenFilesDir := os.Getenv("TOKENFILES_DIR")
 	// homeDir, _ := os.UserHomeDir()
 	//
