@@ -8,15 +8,12 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "gotp",
+	Use:     "gotp",
 	Version: "0.0.1",
-	Short: "Gotp - OTP authentication in golang",
-	// Run: func(cmd *cobra.Command, args []string) {},
+	Short:   "Gotp - OTP authentication in golang",
 }
 
 func init() {
-	// cobra.OnInitialize(initConfig)
-
 	// Add all of the commands here
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
