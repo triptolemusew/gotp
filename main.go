@@ -6,12 +6,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
-	// "path/filepath"
-
-	// "time"
-
-	// "github.com/pquerna/otp/totp"
+	"github.com/pquerna/otp/totp"
 	"github.com/triptolemusew/gotp/encryption"
 )
 
@@ -37,7 +34,7 @@ func listTokens(tokenFilesDir string) error {
 
 func showToken(tokenPath string) (string, error) {
 
-	var token string
+	var secret string
 
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
@@ -51,7 +48,7 @@ func showToken(tokenPath string) (string, error) {
 		if fileNameWithoutExtension(file.Name()) == "a" {
 			token, err := ioutil.ReadFile(match)
 			if err != nil {
-				return "", nil
+				return "", err
 			}
 
 			var password string
@@ -61,15 +58,20 @@ func showToken(tokenPath string) (string, error) {
 			if ext == ENCRYPTED_EXT {
 				token, err := encryption.Decrypt([]byte(password), token)
 				if err != nil {
-					// Proper error message here
-					return "", nil
+					return "", err
 				}
-				return string(token), nil
+
+				secret, err := totp.GenerateCode(string(token), time.Time{})
+				if err != nil {
+					return "", err
+				}
+
+				return string(secret), nil
 			}
 		}
 	}
 
-	return string(token), nil
+	return string(secret), nil
 }
 
 type Token struct {
@@ -100,7 +102,7 @@ func addToken(homeDir string) error {
 
 		err := ioutil.WriteFile(filePath, []byte(token.key), 0644)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	} else {
 		fmt.Println()
@@ -109,7 +111,7 @@ func addToken(homeDir string) error {
 		fmt.Scan(&tokenPasswordConfirmation)
 
 		if token.password != tokenPasswordConfirmation {
-			panic("ERROR: The passwords do not match")
+			return &GotpError{}
 		}
 
 		filePath += ".enc"
@@ -139,7 +141,6 @@ func main() {
 	}
 
 	// fmt.Println(tokenFilesDir)
-
 	// listTokens(tokenFilesDir)
 	// fmt.Println(code)
 
