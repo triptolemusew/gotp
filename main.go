@@ -9,6 +9,7 @@ import (
 
 	"github.com/pquerna/otp/totp"
 	"github.com/triptolemusew/gotp/encryption"
+	"github.com/triptolemusew/gotp/cmd"
 )
 
 const (
@@ -132,12 +133,13 @@ func addToken(homeDir string) error {
 }
 
 func main() {
-	tokenFilesDir := os.Getenv("TOKENFILES_DIR")
-	homeDir, _ := os.UserHomeDir()
-
-	if tokenFilesDir == "" {
-		tokenFilesDir = fmt.Sprintf("%s/%s", homeDir, TOKENFILES_DIR)
-	}
+	cmd.Execute()
+	// tokenFilesDir := os.Getenv("TOKENFILES_DIR")
+	// homeDir, _ := os.UserHomeDir()
+	//
+	// if tokenFilesDir == "" {
+	// 	tokenFilesDir = fmt.Sprintf("%s/%s", homeDir, TOKENFILES_DIR)
+	// }
 
 	// fmt.Println(tokenFilesDir)
 	// listTokens(tokenFilesDir)
