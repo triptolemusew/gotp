@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -33,7 +32,7 @@ func listTokens(tokenFilesDir string) error {
 }
 
 func showToken(tokenPath string) (string, error) {
-
+	var pattern string
 	var secret string
 
 	matches, err := filepath.Glob(pattern)
