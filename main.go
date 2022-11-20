@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,8 +9,8 @@ import (
 	"time"
 
 	"github.com/pquerna/otp/totp"
-	"github.com/triptolemusew/gotp/encryption"
 	"github.com/triptolemusew/gotp/cmd"
+	"github.com/triptolemusew/gotp/encryption"
 )
 
 const (
@@ -111,7 +112,7 @@ func addToken(homeDir string) error {
 		fmt.Scan(&tokenPasswordConfirmation)
 
 		if token.password != tokenPasswordConfirmation {
-			return &GotpError{}
+			return errors.New("Wrong password")
 		}
 
 		filePath += ".enc"
