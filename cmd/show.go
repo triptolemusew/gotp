@@ -27,7 +27,8 @@ type PlainToken struct {
 }
 
 func (p *PlainToken) Print() {
-	fmt.Printf("%s - %s\n", p.name, p.secret)
+	file, _ := os.Stat(p.name)
+	fmt.Printf("%s - %s\n", file.Name(), p.secret)
 }
 
 func init() {
