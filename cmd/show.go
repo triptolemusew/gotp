@@ -12,10 +12,12 @@ import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 
+	tb "github.com/nsf/termbox-go"
 	"github.com/pquerna/otp/totp"
 	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
 	"github.com/triptolemusew/gotp/encryption"
+	"golang.design/x/clipboard"
 )
 
 var showCmd = &cobra.Command{
@@ -48,6 +50,13 @@ func renderUI(tokenList []PlainToken) {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
 
+	tb.SetInputMode(tb.InputEsc)
+
+	err := clipboard.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	defer ui.Close()
 
 	l := widgets.NewList()
@@ -59,12 +68,12 @@ func renderUI(tokenList []PlainToken) {
 
 	l.TextStyle = ui.NewStyle(ui.ColorYellow)
 	l.WrapText = false
-	l.SetRect(0, 0, 50, 8)
+	l.SetRect(0, 0, 50, 14)
 
 	p := widgets.NewParagraph()
 	p.Title = "Search"
 	p.Text = "> "
-	p.SetRect(0, 8, 50, 11)
+	p.SetRect(0, 14, 50, 17)
 	p.TextStyle.Fg = ui.ColorWhite
 	p.BorderStyle.Fg = ui.ColorCyan
 
@@ -81,7 +90,11 @@ func renderUI(tokenList []PlainToken) {
 		case "<C-c>":
 			return
 		case "<Enter>":
-			return
+			{
+				t := tokenList[l.SelectedRow]
+				clipboard.Write(clipboard.FmtText, []byte(t.secret))
+				return
+			}
 		case "<Down>":
 			l.ScrollDown()
 		case "<Up>":
