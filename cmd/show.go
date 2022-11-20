@@ -37,7 +37,7 @@ func init() {
 func showCmdExecution(cmd *cobra.Command, args []string) {
 	var pattern string
 	var tokenName string
-	var tokenList []PlainToken
+	var plainTokenList []PlainToken
 
 	showAll, _ := cmd.Flags().GetBool("all")
 
@@ -91,7 +91,7 @@ func showCmdExecution(cmd *cobra.Command, args []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			tokenList = append(tokenList, PlainToken{
+			plainTokenList = append(plainTokenList, PlainToken{
 				secret: secret,
 				name:   match,
 			})
@@ -100,7 +100,7 @@ func showCmdExecution(cmd *cobra.Command, args []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			tokenList = append(tokenList, PlainToken{
+			plainTokenList = append(plainTokenList, PlainToken{
 				secret: secret,
 				name:   match,
 			})
@@ -108,7 +108,7 @@ func showCmdExecution(cmd *cobra.Command, args []string) {
 	}
 
 	// Print all of the tokenList
-	for _, token := range tokenList {
+	for _, token := range plainTokenList {
 		token.Print()
 	}
 }
