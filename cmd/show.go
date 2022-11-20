@@ -65,6 +65,8 @@ func renderUI(tokenList []PlainToken) {
 	for _, token := range tokenList {
 		l.Rows = append(l.Rows, token.GetLine())
 	}
+	var copiedTokenList []PlainToken
+	copy(copiedTokenList, tokenList)
 
 	l.TextStyle = ui.NewStyle(ui.ColorYellow)
 	l.WrapText = false
@@ -79,7 +81,6 @@ func renderUI(tokenList []PlainToken) {
 
 	ui.Render(l, p)
 
-	previousKey := ""
 	uiEvents := ui.PollEvents()
 
 	var bufferText string
@@ -91,7 +92,7 @@ func renderUI(tokenList []PlainToken) {
 			return
 		case "<Enter>":
 			{
-				t := tokenList[l.SelectedRow]
+				t := copiedTokenList[l.SelectedRow]
 				clipboard.Write(clipboard.FmtText, []byte(t.secret))
 				return
 			}
@@ -108,7 +109,6 @@ func renderUI(tokenList []PlainToken) {
 				if last := len(bufferText) - 1; last >= 0 {
 					bufferText = bufferText[:last]
 				}
-
 			}
 		default:
 			{
@@ -117,30 +117,27 @@ func renderUI(tokenList []PlainToken) {
 		}
 
 		// TODO: Do it proper
-		l.Rows = updateList(tokenList, bufferText)
+		l.Rows, copiedTokenList = updateList(tokenList, bufferText)
 		p.Text = "> " + bufferText
-
-		if previousKey == "g" {
-			previousKey = ""
-		} else {
-			previousKey = e.ID
-		}
 
 		ui.Render(l, p)
 	}
 }
 
-func updateList(t []PlainToken, search string) []string {
+func updateList(t []PlainToken, search string) ([]string, []PlainToken) {
 	var output []string
+	var outputOther []PlainToken
+
 	items := funk.Filter(t, func(x PlainToken) bool {
 		return strings.Contains(x.name, search)
 	})
 	if items, ok := items.([]PlainToken); ok {
 		for _, token := range items {
 			output = append(output, token.GetLine())
+			outputOther = append(outputOther, token)
 		}
 	}
-	return output
+	return output, outputOther
 }
 
 func showCmdExecution(cmd *cobra.Command, args []string) {
