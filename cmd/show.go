@@ -36,7 +36,7 @@ func (p *PlainToken) Print() {
 
 func (p *PlainToken) GetLine() string {
 	file, _ := os.Stat(p.name)
-	return fmt.Sprintf("%s \t\t %s", file.Name(), p.secret)
+	return fmt.Sprintf("%s \t %s", file.Name(), p.secret)
 }
 
 func init() {
@@ -47,6 +47,7 @@ func renderUI(tokenList []PlainToken) {
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
 	}
+
 	defer ui.Close()
 
 	l := widgets.NewList()
@@ -60,36 +61,51 @@ func renderUI(tokenList []PlainToken) {
 	l.WrapText = false
 	l.SetRect(0, 0, 50, 8)
 
-	ui.Render(l)
+	p := widgets.NewParagraph()
+	p.Title = "Search"
+	p.Text = "> "
+	p.SetRect(0, 8, 50, 11)
+	p.TextStyle.Fg = ui.ColorWhite
+	p.BorderStyle.Fg = ui.ColorCyan
+
+	ui.Render(l, p)
 
 	previousKey := ""
 	uiEvents := ui.PollEvents()
+
+	var bufferText string
+
 	for {
 		e := <-uiEvents
 		switch e.ID {
-		case "q", "<C-c>":
+		case "<C-c>":
 			return
-		case "j", "<Down>":
+		case "<Enter>":
+			return
+		case "<Down>":
 			l.ScrollDown()
-		case "k", "<Up>":
+		case "<Up>":
 			l.ScrollUp()
 		case "<C-d>":
 			l.ScrollHalfPageDown()
 		case "<C-u>":
 			l.ScrollHalfPageUp()
-		case "<C-f>":
-			l.ScrollPageDown()
-		case "<C-b>":
-			l.ScrollPageUp()
-		case "g":
-			if previousKey == "g" {
-				l.ScrollTop()
+		case "<Backspace>":
+			{
+				if last := len(bufferText) - 1; last >= 0 {
+					bufferText = bufferText[:last]
+				}
+
 			}
-		case "<Home>":
-			l.ScrollTop()
-		case "G", "<End>":
-			l.ScrollBottom()
+		default:
+			{
+				bufferText += e.ID
+			}
 		}
+
+		// TODO: Do it proper
+		l.Rows = updateList(tokenList, bufferText)
+		p.Text = "> " + bufferText
 
 		if previousKey == "g" {
 			previousKey = ""
@@ -97,8 +113,21 @@ func renderUI(tokenList []PlainToken) {
 			previousKey = e.ID
 		}
 
-		ui.Render(l)
+		ui.Render(l, p)
 	}
+}
+
+func updateList(t []PlainToken, search string) []string {
+	var output []string
+	items := funk.Filter(t, func(x PlainToken) bool {
+		return strings.Contains(x.name, search)
+	})
+	if items, ok := items.([]PlainToken); ok {
+		for _, token := range items {
+			output = append(output, token.GetLine())
+		}
+	}
+	return output
 }
 
 func showCmdExecution(cmd *cobra.Command, args []string) {
@@ -149,38 +178,23 @@ func showCmdExecution(cmd *cobra.Command, args []string) {
 		if ext == ".enc" {
 			password, _ := promptSecure("Enter password: ")
 
-			token, err := encryption.Decrypt([]byte(password), token)
+			token, err = encryption.Decrypt([]byte(password), token)
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			secret, err := totp.GenerateCode(string(token), time.Time{})
-			if err != nil {
-				log.Fatal(err)
-			}
-			plainTokenList = append(plainTokenList, PlainToken{
-				secret: secret,
-				name:   match,
-			})
-		} else {
-			secret, err := totp.GenerateCode(string(token), time.Time{})
-			if err != nil {
-				log.Fatal(err)
-			}
-			plainTokenList = append(plainTokenList, PlainToken{
-				secret: secret,
-				name:   match,
-			})
 		}
+
+		secret, err := totp.GenerateCode(string(token), time.Now())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		plainTokenList = append(plainTokenList, PlainToken{
+			secret: secret,
+			name:   match,
+		})
 	}
 
-	// Print all of the tokenList
-	// for _, token := range plainTokenList {
-	// 	token.Print()
-	// }
-	// renderUI(funk.Map(plainTokenList, func(x *PlainToken) string {
-	// 	return x.name
-	// }))
 	renderUI(plainTokenList)
 }
 
