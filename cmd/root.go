@@ -22,6 +22,7 @@ func init() {
 
 	// Adding available commands
 	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(encCmd)
 	rootCmd.AddCommand(groupCmd)

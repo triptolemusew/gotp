@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -9,10 +10,16 @@ import (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available keys",
-	Run:   list,
+	Run:   listCmdExecution,
 }
 
-func list(cmd *cobra.Command, args []string) {
-	fmt.Println("List")
-	fmt.Println(args)
+func listCmdExecution(cmd *cobra.Command, args []string) {
+	tokens, err := listTokens()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, token := range tokens {
+		fmt.Println(token)
+	}
 }
