@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -94,6 +95,11 @@ func renderUI(tokenList []PlainToken) {
 			{
 				t := copiedTokenList[l.SelectedRow]
 				clipboard.Write(clipboard.FmtText, []byte(t.secret))
+
+				// Check if current environment is running on Wayland
+				if os.Getenv("WAYLAND_DISPLAY") != "" {
+					exec.Command("wl-copy", t.secret).Run()
+				}
 				return
 			}
 		case "<Down>":
