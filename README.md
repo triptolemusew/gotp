@@ -1,1 +1,5 @@
 ## Gotp
+
+
+## Requirements
+- [wl-clipboard]
