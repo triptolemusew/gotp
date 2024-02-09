@@ -108,6 +108,8 @@ func startApp(tuiManager *tui.Manager) error {
 				tuiManager.ScrollDown()
 			case "<Up>":
 				tuiManager.ScrollUp()
+			case "<Space>":
+				tuiManager.HandleBuffer(" ")
 			case "<Enter>":
 				if err := tuiManager.SelectRow(); err != nil {
 					return err

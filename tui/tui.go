@@ -71,6 +71,7 @@ func (m *Manager) setAccountWidgetRows(keys []db.Key) {
 }
 
 func (m *Manager) HandleBuffer(fieldID string) {
+	// TODO: Regex to only accept alphanumeric values
 	m.searchText += fieldID
 	m.SearchWidget.Text = m.searchText
 
