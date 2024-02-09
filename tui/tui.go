@@ -94,7 +94,13 @@ func (m *Manager) SelectRow() error {
 	selectedRow := m.AccountWidget.SelectedRow
 	row := m.filteredKeys[selectedRow]
 
-	passcode, err := otp.GeneratePasscode(row.Secret, otp.ValidateOpts{Period: 30, Digits: otp.DigitsSix})
+	passcode, err := otp.GeneratePasscode(
+		row.Secret,
+		otp.ValidateOpts{
+			Period: 30,
+			Digits: otp.DigitsSix,
+		},
+	)
 	if err != nil {
 		return err
 	}
