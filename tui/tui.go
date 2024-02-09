@@ -1,8 +1,11 @@
 package tui
 
 import (
+	"fmt"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+	"github.com/triptolemusew/gotp/db"
 )
 
 type Manager struct {
@@ -20,7 +23,7 @@ func NewManager() *Manager {
 	}
 }
 
-func (m *Manager) InitializeWidgets() {
+func (m *Manager) InitializeWidgets(keys []db.Key) {
 	m.AccountWidget = widgets.NewList()
 	m.AccountWidget.Title = "Available Accounts"
 	m.AccountWidget.TextStyle = ui.NewStyle(ui.ColorYellow)
@@ -32,6 +35,13 @@ func (m *Manager) InitializeWidgets() {
 	m.SearchWidget.TextStyle.Fg = ui.ColorWhite
 	m.SearchWidget.BorderStyle.Fg = ui.ColorCyan
 	m.SearchWidget.SetRect(0, 14, 50, 17)
+
+	var rows []string
+	for _, key := range keys {
+		rows = append(rows, fmt.Sprintf("[%s] %s", key.Issuer, key.Account))
+	}
+
+	m.AccountWidget.Rows = rows
 }
 
 func (m *Manager) UpdateWidgets(width, height int) {

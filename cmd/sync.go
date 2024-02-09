@@ -45,7 +45,6 @@ func SyncCommandExecution(ctx *cli.Context) error {
 
 		key, err := otp.ParseURL(decodedQr.String())
 
-		// Stash this into sqlite
 		db.Create(dbClient, key)
 
 		return nil

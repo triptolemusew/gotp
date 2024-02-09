@@ -19,22 +19,32 @@ func main() {
 		Name:    "Gotp",
 		Usage:   "Get your token from cli",
 		Version: VERSION,
+		Action: func(ctx *cli.Context) error {
+			if err := ui.Init(); err != nil {
+				log.Fatalf("failed to initialize termui: %v", err)
+			}
+			defer ui.Close()
+
+			tuiManager := tui.NewManager()
+
+			dbClient, _ := db.GetClient(".gotp")
+			keys, err := db.GetAll(dbClient)
+			if err != nil {
+				return err
+			}
+
+			tuiManager.InitializeWidgets(keys)
+
+			startApp(tuiManager)
+
+			return nil
+		},
 		Commands: []*cli.Command{
 			{
 				Name:    "add",
 				Aliases: []string{"a"},
 				Usage:   "Add account",
 				Action: func(ctx *cli.Context) error {
-					if err := ui.Init(); err != nil {
-						log.Fatalf("failed to initialize termui: %v", err)
-					}
-					defer ui.Close()
-
-					tuiManager := tui.NewManager()
-					tuiManager.InitializeWidgets()
-
-					startApp(tuiManager)
-
 					return nil
 				},
 			},
