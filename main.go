@@ -10,6 +10,7 @@ import (
 	"github.com/triptolemusew/gotp/db"
 	"github.com/triptolemusew/gotp/tui"
 	"github.com/urfave/cli/v2"
+	"golang.design/x/clipboard"
 )
 
 const VERSION = "0.1"
@@ -35,7 +36,9 @@ func main() {
 
 			tuiManager.InitializeWidgets(keys)
 
-			startApp(tuiManager)
+			if err := startApp(tuiManager); err != nil {
+				return err
+			}
 
 			return nil
 		},
@@ -84,7 +87,10 @@ func main() {
 	}
 }
 
-func startApp(tuiManager *tui.Manager) {
+func startApp(tuiManager *tui.Manager) error {
+	// Init clipboard
+	clipboard.Init()
+
 	uiRefreshTicker := time.NewTicker(1 * time.Millisecond)
 	defer uiRefreshTicker.Stop()
 
@@ -95,9 +101,17 @@ func startApp(tuiManager *tui.Manager) {
 		case e := <-uiEvents:
 			switch e.ID {
 			case "q", "<C-c>":
-				return
+				return nil
 			case "<Backspace>":
 				tuiManager.RemoveLastCharBuffer()
+			case "<Down>":
+				tuiManager.ScrollDown()
+			case "<Up>":
+				tuiManager.ScrollUp()
+			case "<Enter>":
+				if err := tuiManager.SelectRow(); err != nil {
+					return err
+				}
 			default:
 				tuiManager.HandleBuffer(e.ID)
 			}

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -47,4 +48,15 @@ func Create(db *gorm.DB, key *Key) error {
 		return result.Error
 	}
 	return nil
+}
+
+func FilterByIssuerAndAccount(keys []Key, term string) []Key {
+	var out []Key
+	for _, each := range keys {
+		if strings.Contains(each.Issuer, term) || strings.Contains(each.Account, term) {
+			out = append(out, each)
+		}
+	}
+
+	return out
 }
