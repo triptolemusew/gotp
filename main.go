@@ -112,6 +112,7 @@ func startApp(tuiManager *tui.Manager) error {
 				if err := tuiManager.SelectRow(); err != nil {
 					return err
 				}
+				return nil
 			default:
 				tuiManager.HandleBuffer(e.ID)
 			}
