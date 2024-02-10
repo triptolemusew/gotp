@@ -3,26 +3,53 @@ name: Release binaries
 on:
   release:
     types: [created]
+  push:
+    tags: ["*"]
+
+permissions:
+  contents: write
 
 jobs:
-  releases-matrix:
+  goreleaser:
     name: Release Go Binary
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # build and publish in parallel: linux/amd64
-        goos: [linux]
-        goarch: [amd64]
     steps:
-      - uses: actions/checkout@v2
-      - name: Run tests
-        run: go test -v -p=1 ./...
-      - uses: wangyoucao577/go-release-action@v1.16
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          goos: ${{ matrix.goos }}
-          goarch: ${{ matrix.goarch }}
-          project_path: "./"
-          binary_name: "gotp"
-          ldflags: "-s -w"
-          extra_files: LICENSE Readme.md
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# jobs:
+#   releases-matrix:
+#     name: Release Go Binary
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         # build and publish in parallel: linux/amd64
+#         goos: [linux]
+#         goarch: [amd64]
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Run tests
+#         run: go test -v -p=1 ./...
+#       - uses: wangyoucao577/go-release-action@v1.16
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           goos: ${{ matrix.goos }}
+#           goarch: ${{ matrix.goarch }}
+#           project_path: "./"
+#           binary_name: "gotp"
+#           ldflags: "-s -w"
+#           extra_files: LICENSE Readme.md
