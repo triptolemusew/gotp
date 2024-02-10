@@ -5,8 +5,8 @@ on:
     types:
       - created
   push:
-    branches:
-      - main
+    tags:
+      - "*"
 
 permissions:
   contents: write
