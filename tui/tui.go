@@ -13,8 +13,6 @@ import (
 )
 
 type Manager struct {
-	AvailableAccount int
-
 	AccountWidget *widgets.List
 	SearchWidget  *widgets.Paragraph
 
@@ -22,12 +20,6 @@ type Manager struct {
 
 	keys         []*otp.Key
 	filteredKeys []*otp.Key
-}
-
-func NewManager() *Manager {
-	return &Manager{
-		AvailableAccount: 0,
-	}
 }
 
 func (m *Manager) InitializeWidgets(keys []*otp.Key) {

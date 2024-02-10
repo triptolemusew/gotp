@@ -29,7 +29,7 @@ func main() {
 
 	defer ui.Close()
 
-	tuiManager := tui.NewManager()
+	tuiManager := new(tui.Manager)
 
 	keys, err := otp.GetAllKeys(*pathFlag)
 	if err != nil {
@@ -38,7 +38,7 @@ func main() {
 	tuiManager.InitializeWidgets(keys)
 
 	if err := startApp(tuiManager); err != nil {
-		log.Fatalf("failed to start the app: %v", err)
+		log.Fatalf("failed running the app: %v", err)
 	}
 }
 
@@ -67,10 +67,8 @@ func startApp(tuiManager *tui.Manager) error {
 			case "<Space>":
 				tuiManager.HandleBuffer(" ")
 			case "<Enter>":
-				if err := tuiManager.SelectRow(); err != nil {
-					return err
-				}
-				return nil
+				err := tuiManager.SelectRow()
+				return err
 			default:
 				tuiManager.HandleBuffer(e.ID)
 			}
