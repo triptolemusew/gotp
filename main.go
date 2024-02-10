@@ -49,6 +49,7 @@ func startApp(tuiManager *tui.Manager) error {
 	uiRefreshTicker := time.NewTicker(1 * time.Millisecond)
 	defer uiRefreshTicker.Stop()
 
+	width, height := ui.TerminalDimensions()
 	uiEvents := ui.PollEvents()
 
 	for {
@@ -74,7 +75,7 @@ func startApp(tuiManager *tui.Manager) error {
 				tuiManager.HandleBuffer(e.ID)
 			}
 		case <-uiRefreshTicker.C:
-			tuiManager.UpdateWidgets(1, 1)
+			tuiManager.UpdateWidgets(width, height)
 		}
 	}
 }
