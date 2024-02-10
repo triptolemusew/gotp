@@ -6,8 +6,7 @@ import (
 	"time"
 
 	ui "github.com/gizak/termui/v3"
-	"github.com/triptolemusew/gotp/cmd"
-	"github.com/triptolemusew/gotp/db"
+	"github.com/triptolemusew/gotp/otp"
 	"github.com/triptolemusew/gotp/tui"
 	"github.com/urfave/cli/v2"
 	"golang.design/x/clipboard"
@@ -21,19 +20,12 @@ func main() {
 		Usage:   "Get your token from cli",
 		Version: VERSION,
 		Action: func(ctx *cli.Context) error {
-			if err := ui.Init(); err != nil {
-				log.Fatalf("failed to initialize termui: %v", err)
-			}
-			defer ui.Close()
-
 			tuiManager := tui.NewManager()
 
-			dbClient, _ := db.GetClient(".gotp")
-			keys, err := db.GetAll(dbClient)
+			keys, err := otp.GetAllKeys(".gotp")
 			if err != nil {
 				return err
 			}
-
 			tuiManager.InitializeWidgets(keys)
 
 			if err := startApp(tuiManager); err != nil {
@@ -42,45 +34,13 @@ func main() {
 
 			return nil
 		},
-		Commands: []*cli.Command{
-			{
-				Name:    "add",
-				Aliases: []string{"a"},
-				Usage:   "Add account",
-				Action: func(ctx *cli.Context) error {
-					return nil
-				},
-			},
-			{
-				Name:    "remove",
-				Aliases: []string{"r"},
-				Usage:   "Remove account",
-				Action: func(ctx *cli.Context) error {
-					return nil
-				},
-			},
-			{
-				Name:    "sync",
-				Aliases: []string{"s"},
-				Usage:   "Sync accounts with Gotp folder",
-				Action: func(ctx *cli.Context) error {
-					err := cmd.SyncCommandExecution(ctx)
-					return err
-				},
-			},
-			{
-				Name:    "init",
-				Aliases: []string{"i"},
-				Usage:   "Initialize the application",
-				Action: func(ctx *cli.Context) error {
-					if err := db.Migrate(".gotp"); err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-		},
 	}
+
+	if err := ui.Init(); err != nil {
+		log.Fatalf("failed to initialize termui: %v", err)
+	}
+
+	defer ui.Close()
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

@@ -7,7 +7,7 @@ import (
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
-	"github.com/triptolemusew/gotp/db"
+	// "github.com/triptolemusew/gotp/db"
 	"github.com/triptolemusew/gotp/otp"
 	"golang.design/x/clipboard"
 )
@@ -20,8 +20,8 @@ type Manager struct {
 
 	searchText string
 
-	keys         []db.Key
-	filteredKeys []db.Key
+	keys         []*otp.Key
+	filteredKeys []*otp.Key
 }
 
 func NewManager() *Manager {
@@ -30,7 +30,7 @@ func NewManager() *Manager {
 	}
 }
 
-func (m *Manager) InitializeWidgets(keys []db.Key) {
+func (m *Manager) InitializeWidgets(keys []*otp.Key) {
 	m.AccountWidget = widgets.NewList()
 	m.AccountWidget.Title = "Available Accounts"
 	m.AccountWidget.TextStyle = ui.NewStyle(ui.ColorYellow)
@@ -61,7 +61,7 @@ func (m *Manager) UpdateWidgets(width, height int) {
 	ui.Render(m.AccountWidget, m.SearchWidget)
 }
 
-func (m *Manager) setAccountWidgetRows(keys []db.Key) {
+func (m *Manager) setAccountWidgetRows(keys []*otp.Key) {
 	var rows []string
 	for _, key := range keys {
 		rows = append(rows, fmt.Sprintf("[%s] %s", key.Issuer, key.Account))
@@ -75,7 +75,7 @@ func (m *Manager) HandleBuffer(fieldID string) {
 	m.searchText += fieldID
 	m.SearchWidget.Text = m.searchText
 
-	m.filteredKeys = db.FilterByIssuerAndAccount(m.keys, m.searchText)
+	m.filteredKeys = otp.FilterByIssuerAndAccount(m.keys, m.searchText)
 
 	m.setAccountWidgetRows(m.filteredKeys)
 }
@@ -86,7 +86,7 @@ func (m *Manager) RemoveLastCharBuffer() {
 	}
 	m.SearchWidget.Text = m.searchText
 
-	m.filteredKeys = db.FilterByIssuerAndAccount(m.keys, m.searchText)
+	m.filteredKeys = otp.FilterByIssuerAndAccount(m.keys, m.searchText)
 
 	m.setAccountWidgetRows(m.filteredKeys)
 }
@@ -98,7 +98,7 @@ func (m *Manager) SelectRow() error {
 	passcode, err := otp.GeneratePasscode(
 		row.Secret,
 		otp.ValidateOpts{
-			Period: 30,
+			Period: uint(row.Period),
 			Digits: otp.DigitsSix,
 		},
 	)

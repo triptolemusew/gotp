@@ -3,11 +3,17 @@ package otp
 import (
 	"errors"
 	"fmt"
+	"image"
+	_ "image/png"
+	"io/fs"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/triptolemusew/gotp/db"
+	"github.com/makiuchi-d/gozxing"
+	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
 type Type string
@@ -17,21 +23,22 @@ const (
 	HOTP Type = "hotp"
 )
 
-// type URL struct {
-// 	Type      string
-// 	Issuer    string
-// 	Account   string
-// 	Secret    string
-// 	Algorithm string
-// 	Counter   uint64
-// 	Digits    int
-// 	Period    int
-// }
+type Key struct {
+	Type      string
+	Issuer    string
+	Account   string
+	Secret    string
+	Algorithm string
+	Counter   uint64
+	Digits    int
+	Period    int
+}
 
-func ParseURL(s string) (*db.Key, error) {
+func ParseURL(s string) (*Key, error) {
+	fmt.Println("AT THE START")
 	var typeLabel string
 
-	out := new(db.Key)
+	out := new(Key)
 
 	if ps, err := url.Parse(s); err == nil {
 		if ps.Scheme != "otpauth" {
@@ -85,12 +92,49 @@ func ParseURL(s string) (*db.Key, error) {
 	return out, nil
 }
 
-func GetType(s string) Type {
-	switch s {
-	case "hotp":
-		return HOTP
-	case "totp":
-		return TOTP
+func GetAllKeys(appDir string) ([]*Key, error) {
+	homeDirectory, _ := os.UserHomeDir()
+	directory := filepath.Join(homeDirectory, appDir, "qr")
+
+	qrReader := qrcode.NewQRCodeReader()
+
+	var keys []*Key
+
+	err := filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+
+		img, _, _ := image.Decode(file)
+		bmp, _ := gozxing.NewBinaryBitmapFromImage(img)
+		decodeQr, _ := qrReader.Decode(bmp, nil)
+
+		if key, err := ParseURL(decodeQr.String()); err == nil {
+			if key != nil {
+				keys = append(keys, key)
+			}
+		}
+
+		return nil
+	})
+
+	return keys, err
+}
+
+func FilterByIssuerAndAccount(keys []*Key, term string) []*Key {
+	var out []*Key
+	for _, each := range keys {
+		if strings.Contains(each.Issuer, term) || strings.Contains(each.Account, term) {
+			out = append(out, each)
+		}
 	}
-	return HOTP
+	return out
 }
