@@ -12,15 +12,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 )
 
-type Type string
+type KeyType string
 
 const (
-	TOTP Type = "totp"
-	HOTP Type = "hotp"
+	TOTP KeyType = "totp"
+	HOTP KeyType = "hotp"
 )
 
 type Key struct {
@@ -35,7 +36,6 @@ type Key struct {
 }
 
 func ParseURL(s string) (*Key, error) {
-	fmt.Println("AT THE START")
 	var typeLabel string
 
 	out := new(Key)
@@ -132,7 +132,8 @@ func GetAllKeys(appDir string) ([]*Key, error) {
 func FilterByIssuerAndAccount(keys []*Key, term string) []*Key {
 	var out []*Key
 	for _, each := range keys {
-		if strings.Contains(each.Issuer, term) || strings.Contains(each.Account, term) {
+		search := fmt.Sprintf("%s|%s", strings.ToLower(each.Issuer), strings.ToLower(each.Account))
+		if fuzzy.Match(term, search) {
 			out = append(out, each)
 		}
 	}
