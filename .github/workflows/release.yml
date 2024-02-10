@@ -2,9 +2,11 @@ name: Release binaries
 
 on:
   release:
-    types: [created]
+    types:
+      - created
   push:
-    tags: ["*"]
+    branches:
+      - main
 
 permissions:
   contents: write
