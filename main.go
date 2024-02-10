@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -8,33 +10,18 @@ import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/triptolemusew/gotp/otp"
 	"github.com/triptolemusew/gotp/tui"
-	"github.com/urfave/cli/v2"
+
 	"golang.design/x/clipboard"
 )
 
-const VERSION = "0.1"
+var pathFlag = flag.String("path", ".gotp", "Path to TOTP keys")
 
 func main() {
-	app := &cli.App{
-		Name:    "Gotp",
-		Usage:   "Get your token from cli",
-		Version: VERSION,
-		Action: func(ctx *cli.Context) error {
-			tuiManager := tui.NewManager()
-
-			keys, err := otp.GetAllKeys(".gotp")
-			if err != nil {
-				return err
-			}
-			tuiManager.InitializeWidgets(keys)
-
-			if err := startApp(tuiManager); err != nil {
-				return err
-			}
-
-			return nil
-		},
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: gotp [options]\n\n")
+		flag.PrintDefaults()
 	}
+	flag.Parse()
 
 	if err := ui.Init(); err != nil {
 		log.Fatalf("failed to initialize termui: %v", err)
@@ -42,8 +29,16 @@ func main() {
 
 	defer ui.Close()
 
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+	tuiManager := tui.NewManager()
+
+	keys, err := otp.GetAllKeys(*pathFlag)
+	if err != nil {
+		log.Fatalf("failed to get all totp keys: %v", err)
+	}
+	tuiManager.InitializeWidgets(keys)
+
+	if err := startApp(tuiManager); err != nil {
+		log.Fatalf("failed to start the app: %v", err)
 	}
 }
 
