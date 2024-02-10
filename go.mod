@@ -6,7 +6,7 @@ require (
 	github.com/gizak/termui/v3 v3.1.0
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/makiuchi-d/gozxing v0.1.1
-	golang.design/x/clipboard v0.6.3
+	golang.design/x/clipboard v0.7.0
 	golang.org/x/crypto v0.3.0
 )
 
