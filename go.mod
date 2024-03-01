@@ -7,7 +7,7 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/makiuchi-d/gozxing v0.1.1
 	golang.design/x/clipboard v0.6.3
-	golang.org/x/crypto v0.3.0
+	golang.org/x/crypto v0.20.0
 )
 
 require (
@@ -17,7 +17,7 @@ require (
 	golang.org/x/exp/shiny v0.0.0-20240205201215-2c58cdc269a3 // indirect
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
